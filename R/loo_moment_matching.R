@@ -97,7 +97,6 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
     lwi <- lwi - max(lwi)
     psis_i <- suppressWarnings(loo::psis(lwi, r_eff = r_effi, cores = cores))
     lwi <- as.vector(weights(psis_i))
-    lwfi <- -matrixStats::logSumExp(rep(0, S))
 
     # initialize objects that keep track of the total transformation
     total_shift <- rep(0, npars)
@@ -130,7 +129,6 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
         total_shift <- total_shift + trans$shift
 
         lwi <- quantities_i$lwi
-        lwfi <- quantities_i$lwfi
         ki <- quantities_i$ki
         kfi <- quantities_i$kfi
         log_liki <- quantities_i$log_liki
@@ -154,7 +152,6 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
         total_scaling <- total_scaling * trans$scaling
 
         lwi <- quantities_i$lwi
-        lwfi <- quantities_i$lwfi
         ki <- quantities_i$ki
         kfi <- quantities_i$kfi
         log_liki <- quantities_i$log_liki
@@ -180,7 +177,6 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
           total_mapping <- trans$mapping %*% total_mapping
 
           lwi <- quantities_i$lwi
-          lwfi <- quantities_i$lwfi
           ki <- quantities_i$ki
           kfi <- quantities_i$kfi
           log_liki <- quantities_i$log_liki
@@ -298,7 +294,7 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
 #'   \code{upars}.
 #' @param r_effi MCMC effective sample size divided by the total sample size for 1/exp(log_ratios) for observation i.
 #' @template cores
-#' @return Vector with new parameters, the shift that was performed, and the output of update_quantities_i.
+#' @return List with the updated importance weights, Pareto diagnostics and log-likelihood values.
 #'
 update_quantities_i <- function(x, upars, i, orig_log_prob,
                                 log_prob_upars, log_lik_upars,
@@ -317,11 +313,9 @@ update_quantities_i <- function(x, upars, i, orig_log_prob,
   kfi_new <- psisf_new$diagnostics$pareto_k
   # pareto smoothed weights
   lwi_new <- as.vector(weights(psis_new))
-  lwfi_new <- as.vector(weights(psisf_new))
   # gather results
   list(
     lwi = lwi_new,
-    lwfi = lwfi_new,
     ki = ki_new,
     kfi = kfi_new,
     log_liki = log_liki_new
