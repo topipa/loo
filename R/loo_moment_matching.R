@@ -53,17 +53,18 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
                          ...) {
 
   # input checks
-  stopifnot(checkmate::checkClass(loo,classes = "loo"))
-  stopifnot(checkmate::checkFunction(post_draws))
-  stopifnot(checkmate::checkFunction(log_lik))
-  stopifnot(checkmate::checkFunction(unconstrain_pars))
-  stopifnot(checkmate::checkFunction(log_prob_upars))
-  stopifnot(checkmate::checkFunction(log_lik_upars))
-  stopifnot(checkmate::checkNumber(max_iters))
-  stopifnot(checkmate::checkNumber(k_thres))
-  stopifnot(checkmate::checkLogical(split))
-  stopifnot(checkmate::checkLogical(cov))
-  stopifnot(checkmate::checkNumber(cores))
+  checkmate::assertClass(loo,classes = "loo")
+  checkmate::assertFunction(post_draws)
+  checkmate::assertFunction(log_lik)
+  checkmate::assertFunction(unconstrain_pars)
+  checkmate::assertFunction(log_prob_upars)
+  checkmate::assertFunction(log_lik_upars)
+  checkmate::assertNumber(max_iters)
+  checkmate::assertNumber(k_thres)
+  checkmate::assertLogical(split)
+  checkmate::assertLogical(cov)
+  checkmate::assertNumber(cores)
+
 
   S <- dim(loo)[1]
   N <- dim(loo)[2]
