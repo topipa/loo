@@ -66,3 +66,45 @@ An updated \code{loo} object.
 \description{
 Moment matching algorithm for updating a loo object when Pareto k estimates are high.
 }
+\details{
+The \code{mmloo()} function is an S3 generic and we provide a default method
+that takes as arguments user-specified functions \code{post_draws}, \code{log_lik},
+\code{unconstrain_pars}, \code{log_prob_upars}, and \code{log_lik_upars}.
+}
+\section{Defining \code{mmloo()} methods in a package}{
+ Package developers can define
+\code{mmloo()} methods for fitted models objects. See the example \code{mmloo.stanfit()}
+method in the \strong{Examples} section below for an example.
+}
+
+\examples{
+\dontrun{
+### For package developers: defining mmloo methods
+
+# An example of a possible mmloo method for a 'stanfit' objects
+# (from package rstan). The example is just a wrapper of mmloo.stanfit
+# with user-defined functions post_draws_stanfit, log_lik_stanfit,
+# unconstrain_pars_stanfit, log_prob_upars_stanfit, and log_lik_upars_stanfit.
+#
+mmloo.stanfit <- function(x, loo, ...) {
+loo::mmloo.default(
+  x, loo = loo,
+  post_draws = post_draws_stanfit,
+  log_lik = log_lik_stanfit,
+  unconstrain_pars = unconstrain_pars_stanfit,
+  log_prob_upars = log_prob_upars_stanfit,
+  log_lik_upars = log_lik_upars_stanfit,
+  ...)
+}
+}
+
+
+}
+\references{
+Paananen, T., Piironen, J., Buerkner, P.-C., Vehtari, A. (2019).
+Pushing the Limits of Importance Sampling through Iterative Moment Matching.
+\href{https://arxiv.org/abs/1906.08850/}{preprint arXiv:1906.08850}
+}
+\seealso{
+\code{\link[=loo]{loo()}}
+}
