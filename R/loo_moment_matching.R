@@ -3,9 +3,9 @@
 #' Moment matching algorithm for updating a loo object when Pareto k estimates are high.
 #'
 #'
-#' @export mmloo_manual
 #'
 #'
+#' @export
 #' @param x A fitted model object.
 #' @param loo A loo object that is modified.
 #' @param post_draws A function the takes \code{x} as the first argument and
@@ -37,15 +37,18 @@
 #'
 #' @return An updated \code{loo} object.
 #'
-#'
-#' @seealso [loo()], [psis()], [loo_compare()]
-#' @template moment-matching-references
-#'
-#'
-#'
-#'
-#'
-mmloo_manual <- function(x, loo, post_draws, log_lik,
+
+
+
+
+
+mmloo <- function(x, ...) {
+  UseMethod("mmloo")
+}
+
+
+#' @export
+mmloo.default <- function(x, loo, post_draws, log_lik,
                          unconstrain_pars, log_prob_upars,
                          log_lik_upars, max_iters = 30L,
                          k_thres = 0.5, split = TRUE,
@@ -272,6 +275,71 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
 
 
 
+
+#' @details The `mmloo()` function is an S3 generic and we provide a default method
+#' that takes as arguments user-specified functions \code{post_draws}, \code{log_lik},
+#' \code{unconstrain_pars}, \code{log_prob_upars}, and \code{log_lik_upars}.
+#'
+#' @section Defining `mmloo()` methods in a package: Package developers can define
+#'   `mmloo()` methods for fitted models objects. See the example `mmloo.stanfit()`
+#'   method in the **Examples** section below for an example.
+#'
+
+
+
+
+
+
+
+
+#' @seealso [loo()]
+#' @template moment-matching-references
+#'
+#' @examples
+#' \dontrun{
+#' ### For package developers: defining mmloo methods
+#'
+#' # An example of a possible mmloo method for a 'stanfit' objects
+#' # (from package rstan). The example is just a wrapper of mmloo.stanfit
+#' # with user-defined functions post_draws_stanfit, log_lik_stanfit,
+#' # unconstrain_pars_stanfit, log_prob_upars_stanfit, and log_lik_upars_stanfit.
+#' #
+#' mmloo.stanfit <- function(x, loo, ...) {
+#' loo::mmloo.default(
+#'   x, loo = loo,
+#'   post_draws = post_draws_stanfit,
+#'   log_lik = log_lik_stanfit,
+#'   unconstrain_pars = unconstrain_pars_stanfit,
+#'   log_prob_upars = log_prob_upars_stanfit,
+#'   log_lik_upars = log_lik_upars_stanfit,
+#'   ...)
+#' }
+#' }
+#'
+#'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Internal functions ---------------
 
 
 
