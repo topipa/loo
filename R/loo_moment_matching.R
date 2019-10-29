@@ -36,15 +36,15 @@
 #' @param ... Further arguments passed to the custom functions documented above.
 #'
 #' @return An updated \code{loo} object.
-#' 
-#' 
+#'
+#'
 #' @seealso [loo()], [psis()], [loo_compare()]
 #' @template moment-matching-references
-#' 
-#' 
-#' 
-#' 
-#' 
+#'
+#'
+#'
+#'
+#'
 mmloo_manual <- function(x, loo, post_draws, log_lik,
                          unconstrain_pars, log_prob_upars,
                          log_lik_upars, max_iters = 30L,
@@ -80,6 +80,7 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
   # loop over all observations whose Pareto k is high
   ks <- loo$diagnostics$pareto_k
   kfs <- rep(0,N)
+  r_effs <- loo$diagnostics$n_eff
   I <- which(ks > k_thres)
   for (i in I) {
     message("Moment matching observation ", i)
@@ -89,7 +90,7 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
     kfi <- 0
     log_liki <- log_lik(x, i, ...)
     dim(log_liki) <- c(NROW(log_liki), NCOL(log_liki), 1)
-    r_effi <- loo::relative_eff(exp(log_liki), cores = cores)
+    r_effi <- r_effs[i]
     dim(log_liki) <- NULL
 
     # compute log-weights per draw
@@ -113,7 +114,7 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
       if (iterind == max_iters) {
         throw_moment_match_max_iters_warning()
       }
-      
+
       # 1. match means
       trans <- shift(x, uparsi, lwi)
       # gather updated quantities
@@ -233,11 +234,11 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
     if (!is.null(loo$psis_object)) {
       loo$psis_object$log_weights[, i] <- lwi
     }
-    
+
     if (!split) {
       throw_large_kf_warning(kfs)
     }
-    
+
   }
   # combined estimates
   loo$estimates[1, 1] <- sum(loo$pointwise[, 1])
@@ -261,7 +262,7 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
   loo$se_elpd_loo <- loo$estimates[1, 2]
   loo$se_p_loo <- loo$estimates[2, 2]
   loo$se_looic <- loo$estimates[3, 2]
-  
+
   # Warn if some Pareto ks are still high
   psislw_warnings(loo$diagnostics$pareto_k)
 
@@ -436,7 +437,7 @@ throw_large_kf_warning <- function(kf) {
       call. = FALSE
     )
   }
-  
+
 }
 
 #' warnings about pareto k values ------------------------------------------
