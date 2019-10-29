@@ -17,8 +17,8 @@ mmloo_manual(x, loo, post_draws, log_lik, unconstrain_pars, log_prob_upars,
 returns a matrix of posterior draws of the model parameters.}
 
 \item{log_lik}{A function that takes \code{x} and \code{i} and returns a
-matrix (one column per chain) or a vector (all chains stacked) of
-log-likeliood draws of the \code{i}th observation.}
+vector of log-likeliood draws of the \code{i}th observation
+based on the model \code{x}.}
 
 \item{unconstrain_pars}{A function that takes arguments \code{x}, and
 \code{pars} and returns posterior draws on the unconstrained space based on

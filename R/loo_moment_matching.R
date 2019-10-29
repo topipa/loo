@@ -11,8 +11,8 @@
 #' @param post_draws A function the takes \code{x} as the first argument and
 #'   returns a matrix of posterior draws of the model parameters.
 #' @param log_lik A function that takes \code{x} and \code{i} and returns a
-#'   matrix (one column per chain) or a vector (all chains stacked) of
-#'   log-likeliood draws of the \code{i}th observation.
+#'   vector of log-likeliood draws of the \code{i}th observation
+#'   based on the model \code{x}.
 #' @param unconstrain_pars A function that takes arguments \code{x}, and
 #'   \code{pars} and returns posterior draws on the unconstrained space based on
 #'   the posterior draws on the constrained space passed via \code{pars}.
@@ -89,9 +89,7 @@ mmloo_manual <- function(x, loo, post_draws, log_lik,
     ki <- ks[i]
     kfi <- 0
     log_liki <- log_lik(x, i, ...)
-    dim(log_liki) <- c(NROW(log_liki), NCOL(log_liki), 1)
     r_effi <- r_effs[i]
-    dim(log_liki) <- NULL
 
     # compute log-weights per draw
     lwi <- -log_liki
