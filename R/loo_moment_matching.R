@@ -1,11 +1,12 @@
 #' Moment matching for efficient approximate leave-one-out cross-validation (LOO)
 #'
-#' Moment matching algorithm for updating a loo object when Pareto k estimates are high.
+#' Moment matching algorithm for updating a loo object when Pareto k estimates
+#' are large.
 #'
 #'
 #'
 #'
-#' @export
+#' @export mmloo mmloo.default
 #' @param x A fitted model object.
 #' @param loo A loo object that is modified.
 #' @param post_draws A function the takes \code{x} as the first argument and
@@ -23,27 +24,29 @@
 #'   and \code{i} and returns a vector of log-likeliood draws of the \code{i}th
 #'   observation based on the unconstrained posterior draws passed via
 #'   \code{upars}.
-#' @param max_iters Maximum number of moment matching iterations. Usually this does not
-#' need to be modified. If the maximum number of iterations is reached, there will be a warning, and
-#' increasing \code{max_iters} may improve accuracy.
+#' @param max_iters Maximum number of moment matching iterations. Usually this
+#' does not need to be modified. If the maximum number of iterations is reached,
+#' there will be a warning, and increasing \code{max_iters} may improve accuracy.
 #' @param k_thres Threshold value for Pareto k values above which the moment
 #'   matching algorithm is used. The default value is 0.5.
 #' @param split Logical; Indicate whether to do the split transformation or not
 #'   at the end of moment matching for each LOO fold.
-#' @param cov Logical; Indicate whether to match the covariance matrix of the samples or not.
+#' @param cov Logical; Indicate whether to match the covariance matrix of the
+#' samples or not.
 #'   If \code{FALSE}, only the mean and marginal variances are matched.
 #' @template cores
 #' @param ... Further arguments passed to the custom functions documented above.
 #'
 #' @return An updated \code{loo} object.
 #'
-#' @details The `mmloo()` function is an S3 generic and we provide a default method
-#' that takes as arguments user-specified functions \code{post_draws}, \code{log_lik},
-#' \code{unconstrain_pars}, \code{log_prob_upars}, and \code{log_lik_upars}.
+#' @details The `mmloo()` function is an S3 generic and we provide a default
+#' method that takes as arguments user-specified functions \code{post_draws},
+#' \code{log_lik}, \code{unconstrain_pars}, \code{log_prob_upars}, and
+#' \code{log_lik_upars}.
 #'
-#' @section Defining `mmloo()` methods in a package: Package developers can define
-#'   `mmloo()` methods for fitted models objects. See the example `mmloo.stanfit()`
-#'   method in the **Examples** section below for an example.
+#' @section Defining `mmloo()` methods in a package: Package developers can
+#' define `mmloo()` methods for fitted models objects. The
+#' `mmloo.stanfit()` method in the **Examples** section provides an example.
 #'
 #' @seealso [loo()]
 #' @template moment-matching-references
@@ -122,7 +125,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
   # loop over all observations whose Pareto k is high
   ks <- loo$diagnostics$pareto_k
   kfs <- rep(0,N)
-  r_effs <- loo$diagnostics$n_eff
+  r_effs <- loo$diagnostics$n_eff/S
   I <- which(ks > k_thres)
   for (i in I) {
     message("Moment matching observation ", i)
@@ -348,9 +351,11 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
 #'
 #' @noRd
 #' @param x A fitted model object.
-#' @param upars A matrix representing a sample of vector-valued parameters in the unconstrained space.
+#' @param upars A matrix representing a sample of vector-valued parameters in
+#' the unconstrained space.
 #' @param i observation number.
-#' @param orig_log_prob log probability densities of the original draws from the model \code{x}.
+#' @param orig_log_prob log probability densities of the original draws from
+#' the model \code{x}.
 #' @param log_prob_upars A function that takes arguments \code{x} and
 #'   \code{upars} and returns a matrix of log-posterior density values of the
 #'   unconstrained posterior draws passed via \code{upars}.
@@ -358,9 +363,11 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
 #'   and \code{i} and returns a vector of log-likeliood draws of the \code{i}th
 #'   observation based on the unconstrained posterior draws passed via
 #'   \code{upars}.
-#' @param r_effi MCMC effective sample size divided by the total sample size for 1/exp(log_ratios) for observation i.
+#' @param r_effi MCMC effective sample size divided by the total sample size
+#' for 1/exp(log_ratios) for observation i.
 #' @template cores
-#' @return List with the updated importance weights, Pareto diagnostics and log-likelihood values.
+#' @return List with the updated importance weights, Pareto diagnostics and
+#' log-likelihood values.
 #'
 update_quantities_i <- function(x, upars, i, orig_log_prob,
                                 log_prob_upars, log_lik_upars,
@@ -391,11 +398,13 @@ update_quantities_i <- function(x, upars, i, orig_log_prob,
 
 
 #' Shift a matrix of parameters to their weighted mean.
-#' Also calls update_quantities_i which updates the importance weights based on the supplied model object.
+#' Also calls update_quantities_i which updates the importance weights based on
+#' the supplied model object.
 #'
 #' @noRd
 #' @param x A fitted model object.
-#' @param upars A matrix representing a sample of vector-valued parameters in the unconstrained space
+#' @param upars A matrix representing a sample of vector-valued parameters in
+#' the unconstrained space
 #' @param lwi A vector representing the log-weight of each parameter
 #' @return List with the shift that was performed, and the new parameter matrix.
 #'
@@ -415,15 +424,18 @@ shift <- function(x, upars, lwi) {
 
 
 
-#' Shift a matrix of parameters to their weighted mean and scale the marginal variances
-#' to match the weighted marginal variances.
-#' Also calls update_quantities_i which updates the importance weights based on the supplied model object.
+#' Shift a matrix of parameters to their weighted mean and scale the marginal
+#' variances to match the weighted marginal variances. Also calls
+#' update_quantities_i which updates the importance weights based on
+#' the supplied model object.
 #'
 #' @noRd
 #' @param x A fitted model object.
-#' @param upars A matrix representing a sample of vector-valued parameters in the unconstrained space
+#' @param upars A matrix representing a sample of vector-valued parameters in
+#' the unconstrained space
 #' @param lwi A vector representing the log-weight of each parameter
-#' @return List with the shift and scaling that were performed, and the new parameter matrix.
+#' @return List with the shift and scaling that were performed, and the new
+#' parameter matrix.
 #'
 #'
 shift_and_scale <- function(x, upars, lwi) {
@@ -450,13 +462,16 @@ shift_and_scale <- function(x, upars, lwi) {
 
 #' Shift a matrix of parameters to their weighted mean and scale the covariance
 #' to match the weighted covariance.
-#' Also calls update_quantities_i which updates the importance weights based on the supplied model object.
+#' Also calls update_quantities_i which updates the importance weights based on
+#' the supplied model object.
 #'
 #' @noRd
 #' @param x A fitted model object.
-#' @param upars A matrix representing a sample of vector-valued parameters in the unconstrained space
+#' @param upars A matrix representing a sample of vector-valued parameters in
+#' the unconstrained space
 #' @param lwi A vector representing the log-weight of each parameter
-#' @return List with the shift and mapping that were performed, and the new parameter matrix.
+#' @return List with the shift and mapping that were performed, and the new
+#' parameter matrix.
 #'
 shift_and_cov <- function(x, upars, lwi, ...) {
   # compute moments using log weights

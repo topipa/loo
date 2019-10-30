@@ -33,9 +33,9 @@ and \code{i} and returns a vector of log-likeliood draws of the \code{i}th
 observation based on the unconstrained posterior draws passed via
 \code{upars}.}
 
-\item{max_iters}{Maximum number of moment matching iterations. Usually this does not
-need to be modified. If the maximum number of iterations is reached, there will be a warning, and
-increasing \code{max_iters} may improve accuracy.}
+\item{max_iters}{Maximum number of moment matching iterations. Usually this
+does not need to be modified. If the maximum number of iterations is reached,
+there will be a warning, and increasing \code{max_iters} may improve accuracy.}
 
 \item{k_thres}{Threshold value for Pareto k values above which the moment
 matching algorithm is used. The default value is 0.5.}
@@ -43,7 +43,8 @@ matching algorithm is used. The default value is 0.5.}
 \item{split}{Logical; Indicate whether to do the split transformation or not
 at the end of moment matching for each LOO fold.}
 
-\item{cov}{Logical; Indicate whether to match the covariance matrix of the samples or not.
+\item{cov}{Logical; Indicate whether to match the covariance matrix of the
+samples or not.
 If \code{FALSE}, only the mean and marginal variances are matched.}
 
 \item{cores}{The number of cores to use for parallelization. This defaults to
@@ -64,17 +65,19 @@ setting \code{mc.cores} interactively or in a script is fine).
 An updated \code{loo} object.
 }
 \description{
-Moment matching algorithm for updating a loo object when Pareto k estimates are high.
+Moment matching algorithm for updating a loo object when Pareto k estimates
+are large.
 }
 \details{
-The \code{mmloo()} function is an S3 generic and we provide a default method
-that takes as arguments user-specified functions \code{post_draws}, \code{log_lik},
-\code{unconstrain_pars}, \code{log_prob_upars}, and \code{log_lik_upars}.
+The \code{mmloo()} function is an S3 generic and we provide a default
+method that takes as arguments user-specified functions \code{post_draws},
+\code{log_lik}, \code{unconstrain_pars}, \code{log_prob_upars}, and
+\code{log_lik_upars}.
 }
 \section{Defining \code{mmloo()} methods in a package}{
- Package developers can define
-\code{mmloo()} methods for fitted models objects. See the example \code{mmloo.stanfit()}
-method in the \strong{Examples} section below for an example.
+ Package developers can
+define \code{mmloo()} methods for fitted models objects. The
+\code{mmloo.stanfit()} method in the \strong{Examples} section provides an example.
 }
 
 \examples{

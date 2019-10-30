@@ -8,7 +8,7 @@ set.seed(123)
 S <- 40000
 
 # helper functions for sampling from the posterior distribution
-rinvchisq <- function(n, df, scale = 1/df) 
+rinvchisq <- function(n, df, scale = 1/df)
 {
   if ((length(scale) != 1) & (length(scale) != n))
     stop("scale should be a scalar or a vector of the same length as x")
@@ -16,7 +16,7 @@ rinvchisq <- function(n, df, scale = 1/df)
     stop("df must be greater than zero")
   if (any(scale <= 0))
     stop("scale must be greater than zero")
-  return((df*scale)/rchisq(n, df = df)) 
+  return((df*scale)/rchisq(n, df = df))
 }
 
 dinvchisq <- function(x, df, scale=1/df, log = FALSE)
@@ -118,7 +118,6 @@ lwi_1 <- lwi_1 - logSumExp(lwi_1)
 
 
 
-
 test_that("log_prob_upars_test works", {
   upars <- unconstrain_pars_test(x, x$draws)
   xloo <- list()
@@ -127,7 +126,7 @@ test_that("log_prob_upars_test works", {
   xloo$data$n <- n - 1
   xloo$data$ymean <- mean(y[-1])
   xloo$data$s2 <- sum((y[-1] - mean(y[-1]))^2)/(n - 2)
-  
+
   post1 <- log_prob_upars_test(x,upars)
   post1 <- post1 - logSumExp(post1)
   post2 <- log_prob_upars_test(xloo,upars) + loglik[,1]
@@ -136,34 +135,24 @@ test_that("log_prob_upars_test works", {
 })
 
 
-
-
-
-
-
-
-
-
-
-
 test_that("mmloo_manual warnings work", {
   # loo object
   loo_manual <- suppressWarnings(loo(loglik))
-  
-  
-  expect_warning(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+
+  expect_warning(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                               unconstrain_pars_test, log_prob_upars_test,
                               log_lik_upars_test, max_iters = 30L,
                               k_thres = 100, split = FALSE,
                               cov = TRUE, cores = 1), "Some Pareto k")
-  
-  expect_warning(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+  expect_warning(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                               unconstrain_pars_test, log_prob_upars_test,
                               log_lik_upars_test, max_iters = 30L,
                               k_thres = 0.5, split = FALSE,
                               cov = TRUE, cores = 1), "The accuracy of self-normalized importance sampling")
-  
-  expect_warning(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+  expect_warning(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                               unconstrain_pars_test, log_prob_upars_test,
                               log_lik_upars_test, max_iters = 2,
                               k_thres = 0.5, split = TRUE,
@@ -175,118 +164,100 @@ test_that("mmloo_manual works", {
 
   # loo object
   loo_manual <- suppressWarnings(loo(loglik))
-  
-  mmloo_manual <- suppressWarnings(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+  mmloo_object <- suppressWarnings(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                                                 unconstrain_pars_test, log_prob_upars_test,
                                                 log_lik_upars_test, max_iters = 30L,
                                                 k_thres = 0.8, split = FALSE,
                                                 cov = TRUE, cores = 1))
-  
-  expect_equal_to_reference(mmloo_manual, "reference-results/moment_match_loo_1.rds")
-  
-  mmloo_manual2 <- suppressWarnings(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+  expect_equal_to_reference(mmloo_object, "reference-results/moment_match_loo_1.rds")
+
+  mmloo_object2 <- suppressWarnings(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                                                 unconstrain_pars_test, log_prob_upars_test,
                                                 log_lik_upars_test, max_iters = 30L,
                                                 k_thres = 0.5, split = FALSE,
                                                 cov = TRUE, cores = 1))
-  
-  expect_equal_to_reference(mmloo_manual2, "reference-results/moment_match_loo_2.rds")
-  
-  mmloo_manual3 <- suppressWarnings(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+  expect_equal_to_reference(mmloo_object2, "reference-results/moment_match_loo_2.rds")
+
+  mmloo_object3 <- suppressWarnings(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                                                 unconstrain_pars_test, log_prob_upars_test,
                                                 log_lik_upars_test, max_iters = 30L,
                                                 k_thres = 0.5, split = TRUE,
                                                 cov = TRUE, cores = 1))
-  
-  expect_equal_to_reference(mmloo_manual3, "reference-results/moment_match_loo_3.rds")
-  
-  mmloo_manual4 <- suppressWarnings(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
+
+  expect_equal_to_reference(mmloo_object3, "reference-results/moment_match_loo_3.rds")
+
+  mmloo_object4 <- suppressWarnings(mmloo(x, loo_manual, post_draws_test, log_lik_test,
                                                 unconstrain_pars_test, log_prob_upars_test,
                                                 log_lik_upars_test, max_iters = 30L,
                                                 k_thres = 100, split = FALSE,
                                                 cov = TRUE, cores = 1))
-  
-  expect_equal(loo_manual,mmloo_manual4)
-  
+
+  expect_equal(loo_manual,mmloo_object4)
+
 })
 
 
 
-# 
-# test_that("mmloo_manual works with multiple cores", {
-#   
-#   # loo object
-#   loo_manual <- suppressWarnings(loo(loglik))
-#  
-#   mmloo_manual3 <- suppressWarnings(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
-#                                                  unconstrain_pars_test, log_prob_upars_test,
-#                                                  log_lik_upars_test, max_iters = 30L,
-#                                                  k_thres = 0.5, split = FALSE,
-#                                                  cov = TRUE, cores = 1))
-#   
-#   mmloo_manual4 <- suppressWarnings(mmloo_manual(x, loo_manual, post_draws_test, log_lik_test,
-#                                                  unconstrain_pars_test, log_prob_upars_test,
-#                                                  log_lik_upars_test, max_iters = 30L,
-#                                                  k_thres = 0.5, split = FALSE,
-#                                                  cov = TRUE, cores = 4))
-#   
-#   expect_equal(mmloo_manual3$diagnostics$pareto_k, mmloo_manual4$diagnostics$pareto_k)
-#   expect_equal(mmloo_manual3$diagnostics$n_eff, mmloo_manual4$diagnostics$n_eff)
-#   
-#   expect_equal(mmloo_manual3$estimates, mmloo_manual4$estimates)
-#   
-#   # TODO
-#   # this test fails because mcse_elpd_loo computation has randomness
-#   # fix this when issue #116 is fixed
-#   #expect_equal(mmloo_manual3$pointwise, mmloo_manual4$pointwise)
-#   
-# })
-# 
+test_that("mmloo_manual works with multiple cores", {
 
+  # loo object
+  loo_manual <- suppressWarnings(loo(loglik))
 
+  mmloo_manual3 <- suppressWarnings(mmloo(x, loo_manual, post_draws_test, log_lik_test,
+                                                 unconstrain_pars_test, log_prob_upars_test,
+                                                 log_lik_upars_test, max_iters = 30L,
+                                                 k_thres = 0.5, split = FALSE,
+                                                 cov = TRUE, cores = 1))
+
+  mmloo_manual4 <- suppressWarnings(mmloo(x, loo_manual, post_draws_test, log_lik_test,
+                                                 unconstrain_pars_test, log_prob_upars_test,
+                                                 log_lik_upars_test, max_iters = 30L,
+                                                 k_thres = 0.5, split = FALSE,
+                                                 cov = TRUE, cores = 4))
+
+  expect_equal(mmloo_manual3$diagnostics$pareto_k, mmloo_manual4$diagnostics$pareto_k)
+  expect_equal(mmloo_manual3$diagnostics$n_eff, mmloo_manual4$diagnostics$n_eff)
+
+  expect_equal(mmloo_manual3$estimates, mmloo_manual4$estimates)
+
+  # TODO
+  # this test fails because mcse_elpd_loo computation has randomness
+  # fix this when issue #116 is fixed
+  # expect_equal(mmloo_manual3$pointwise, mmloo_manual4$pointwise)
+
+})
 
 
 
 test_that("split_mm works", {
-  
+
   psis_1 <- suppressWarnings(loo::psis(lwi_1 - max(lwi_1), r_eff = 1, cores = 1))
   lwi_1_ps <- as.vector(weights(psis_1))
-  
+
   split <- split_mm(
     x, upars, cov = FALSE, total_shift = c(0,0), total_scaling = c(1,1), total_mapping = diag(c(1,1)), i = 1,
     log_prob_upars = log_prob_upars_test, log_lik_upars = log_lik_upars_test,
     cores = cores, r_effi = 1)
-  
+
   expect_named(split,c("lwi", "log_liki"))
-  
+
   expect_equal(lwi_1_ps,split$lwi)
-  
+
   split2 <- split_mm(
     x, upars, cov = FALSE, total_shift = c(-0.1,-0.2), total_scaling = c(0.7,0.7),
     total_mapping = matrix(c(1,0.1,0.1,1),2,2), i = 1,
     log_prob_upars = log_prob_upars_test, log_lik_upars = log_lik_upars_test,
     cores = cores, r_effi = 1)
-  
+
   expect_equal_to_reference(split2, "reference-results/moment_match_split.rds")
-  
+
 })
 
-
-
-
-
-
-
-
-
-
-
-
 test_that("Difficult Stan model works", {
-  
-  
-  
-  
+
   model_code <- "data {
   int<lower=0> N;
   int<lower=0> K;
@@ -294,7 +265,7 @@ test_that("Difficult Stan model works", {
   vector[N] y;
   real<lower=0> beta_prior_scale;
   real<lower=0> alpha_prior_scale;
-  
+
 }
   parameters {
   real alpha;
@@ -312,24 +283,24 @@ test_that("Difficult Stan model works", {
   for (n in 1:N)
   log_lik[n] = normal_lpdf(y[n] | x[n] * beta + alpha, sigma);
   }
-  
-  
+
+
   "
-  
+
   normalize_matrix <- function(a) {
     b = sweep(a,MARGIN = 2,(apply(a,MARGIN = 2,FUN = mean)),`-`)
     return(sweep(b,MARGIN = 2,(apply(b,MARGIN = 2,FUN = sd)),`/`))
   }
-  
+
   normalize_vector <- function(a) {
     b = a - mean(a)
     return(b/sd(b))
   }
-  
-  
+
+
   SEED = 1234
   set.seed(SEED)
-  
+
   # generate data
   n = as.integer(60)
   k = as.integer(50)
@@ -338,38 +309,29 @@ test_that("Difficult Stan model works", {
   x <- MASS::mvrnorm(n, rep(0,k), Sigma)
   w <- c(c(-1, 1, 2), rep(0,k - 3))
   y <- x %*% w + rnorm(n)*2
-  
+
   y = normalize_vector(y)
   x = normalize_matrix(x)
-  
-  
+
+
   beta_prior_scale = 2.5
   alpha_prior_scale = 5.0
-  
+
   stanmodel = stan_model(model_code = model_code)
   standata = list(N = n, K = k, x = as.matrix(x), y = c(y),beta_prior_scale = beta_prior_scale, alpha_prior_scale = alpha_prior_scale)
-  
-  
-  
+
+
+
   fit <- suppressWarnings(sampling(stanmodel,standata, chains = 1))
-  
+
   loo2 <- suppressWarnings(loo(fit,moment_match = TRUE))
-  
+
   expect_equal_to_reference(loo2, "reference-results/moment_match_loo_Stan_1.rds")
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
 })
-
-
-
-
-
-
-
-
-
