@@ -35,7 +35,6 @@
 #' samples or not.
 #'   If \code{FALSE}, only the mean and marginal variances are matched.
 #' @template cores
-#' @template is_method
 #' @param ... Further arguments passed to the custom functions documented above.
 #'
 #' @return The `mmloo()` methods return an updated \code{loo} object.
@@ -94,7 +93,6 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
                           log_lik_upars, max_iters = 30L,
                           k_thres = 0.5, split = TRUE,
                           cov = TRUE, cores = getOption("mc.cores", 1),
-                          is_method = "psis",
                           ...) {
 
   # input checks
@@ -109,6 +107,22 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
   checkmate::assertLogical(split)
   checkmate::assertLogical(cov)
   checkmate::assertNumber(cores)
+
+
+  if ("psis_loo" %in% class(loo)) {
+    is_method <- "psis"
+  }
+  else if ("sis_loo" %in% class(loo)) {
+    is_method <- "sis"
+  }
+  else if ("tis_loo" %in% class(loo)) {
+    is_method <- "tis"
+  }
+  else {
+    stop("The importance sampling class of the loo object is unknown.
+         Known classes are \"psis\", \"sis\", \"tis\".")
+  }
+
 
 
   S <- dim(loo)[1]

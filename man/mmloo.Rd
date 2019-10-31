@@ -9,8 +9,7 @@ mmloo(x, ...)
 
 \method{mmloo}{default}(x, loo, post_draws, log_lik, unconstrain_pars,
   log_prob_upars, log_lik_upars, max_iters = 30L, k_thres = 0.5,
-  split = TRUE, cov = TRUE, cores = getOption("mc.cores", 1),
-  is_method = "psis", ...)
+  split = TRUE, cov = TRUE, cores = getOption("mc.cores", 1), ...)
 }
 \arguments{
 \item{x}{A fitted model object.}
@@ -65,20 +64,6 @@ recommend using as many (or close to as many) cores as possible.
 \href{https://github.com/stan-dev/loo/issues/94}{recommended} to avoid using
 the \code{.Rprofile} file to set \code{mc.cores} (using the \code{cores} argument or
 setting \code{mc.cores} interactively or in a script is fine).
-}}
-
-\item{is_method}{Importance sampling method to use. The following methods are implemented:
-\describe{
-\item{\code{psis}}{
-Pareto-Smoothed Importance Sampling (PSIS). Default method.
-}
-\item{\code{tis}}{
-Truncated Importance Sampling (TIS) with truncation at \code{sqrt(S)},
-where \code{S} is the number of posterior draws.
-}
-\item{\code{sis}}{
-Standard Importance Sampling (SIS).
-}
 }}
 }
 \value{
