@@ -197,6 +197,9 @@ test_that("mmloo.default without split works", {
                                                 k_thres = 100, split = FALSE,
                                                 cov = TRUE, cores = 1))
 
+  mmloo_object4$diagnostics <- list(pareto_k = mmloo_object4$diagnostics$pareto_k_original,
+                                    n_eff = mmloo_object4$diagnostics$n_eff)
+
   expect_equal(loo_manual,mmloo_object4)
 
 })

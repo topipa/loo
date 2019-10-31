@@ -123,6 +123,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
          Known classes are \"psis\", \"sis\", \"tis\".")
   }
 
+  loo$diagnostics$pareto_k_original <- loo$diagnostics$pareto_k
 
 
   S <- dim(loo)[1]
