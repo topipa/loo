@@ -22,8 +22,10 @@ mmloo(x, ...)
 returns a matrix of posterior draws of the model parameters.}
 
 \item{log_lik}{A function that takes \code{x} and \code{i} and returns a
-vector of log-likeliood draws of the \code{i}th observation
-based on the model \code{x}.}
+matrix (one column per chain) or a vector (all chains stacked) of
+log-likeliood draws of the \code{i}th observation based on the
+model \code{x}. If the draws are obtained using MCMC, the
+matrix with MCMC chains separated is preferred.}
 
 \item{unconstrain_pars}{A function that takes arguments \code{x}, and
 \code{pars} and returns posterior draws on the unconstrained space based on
@@ -68,6 +70,9 @@ setting \code{mc.cores} interactively or in a script is fine).
 }
 \value{
 The \code{mmloo()} methods return an updated \code{loo} object.
+The structure of the updated \code{loo} object is similar, but the
+method also stores the original Pareto k diagnostic values in
+the diagnostics field.
 }
 \description{
 Moment matching algorithm for updating a loo object when Pareto k estimates
