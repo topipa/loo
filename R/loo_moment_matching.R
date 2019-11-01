@@ -12,8 +12,10 @@
 #' @param post_draws A function the takes \code{x} as the first argument and
 #'   returns a matrix of posterior draws of the model parameters.
 #' @param log_lik A function that takes \code{x} and \code{i} and returns a
-#'   vector of log-likeliood draws of the \code{i}th observation
-#'   based on the model \code{x}.
+#'   matrix (one column per chain) or a vector (all chains stacked) of
+#'   log-likeliood draws of the \code{i}th observation based on the
+#'   model \code{x}. If the draws are obtained using MCMC, the
+#'   matrix with MCMC chains separated is preferred.
 #' @param unconstrain_pars A function that takes arguments \code{x}, and
 #'   \code{pars} and returns posterior draws on the unconstrained space based on
 #'   the posterior draws on the constrained space passed via \code{pars}.
@@ -38,6 +40,9 @@
 #' @param ... Further arguments passed to the custom functions documented above.
 #'
 #' @return The `mmloo()` methods return an updated \code{loo} object.
+#' The structure of the updated \code{loo} object is similar, but the
+#' method also stores the original Pareto k diagnostic values in
+#' the diagnostics field.
 #'
 #' @details The `mmloo()` function is an S3 generic and we provide a default
 #' method that takes as arguments user-specified functions \code{post_draws},
@@ -141,7 +146,6 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
   # loop over all observations whose Pareto k is high
   ks <- loo$diagnostics$pareto_k
   kfs <- rep(0,N)
-  r_effs <- loo$diagnostics$n_eff/S
   I <- which(ks > k_thres)
   for (i in I) {
     message("Moment matching observation ", i)
@@ -150,7 +154,9 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
     ki <- ks[i]
     kfi <- 0
     log_liki <- log_lik(x, i, ...)
-    r_effi <- r_effs[i]
+    dim(log_liki) <- c(NROW(log_liki), NCOL(log_liki), 1)
+    r_effi <- loo::relative_eff(exp(log_liki), cores = cores)
+    dim(log_liki) <- NULL
 
     is_obj <- suppressWarnings(importance_sampling.default(-log_liki, method = is_method, r_eff = r_effi, cores = cores))
     lwi <- as.vector(weights(is_obj))
