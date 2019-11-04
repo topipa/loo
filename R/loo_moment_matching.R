@@ -154,12 +154,15 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
     ki <- ks[i]
     kfi <- 0
     log_liki <- log_lik(x, i, ...)
-    dim(log_liki) <- c(NROW(log_liki), NCOL(log_liki), 1)
+    S_per_chain <- NROW(log_liki)
+    N_chains <- NCOL(log_liki)
+    dim(log_liki) <- c(S_per_chain, N_chains, 1)
     r_effi <- loo::relative_eff(exp(log_liki), cores = cores)
     dim(log_liki) <- NULL
 
     is_obj <- suppressWarnings(importance_sampling.default(-log_liki, method = is_method, r_eff = r_effi, cores = cores))
     lwi <- as.vector(weights(is_obj))
+    lwfi <- -matrixStats::logSumExp(rep(0, S))
 
     # initialize objects that keep track of the total transformation
     total_shift <- rep(0, npars)
@@ -193,6 +196,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
         total_shift <- total_shift + trans$shift
 
         lwi <- quantities_i$lwi
+        lwfi <- quantities_i$lwfi
         ki <- quantities_i$ki
         kfi <- quantities_i$kfi
         log_liki <- quantities_i$log_liki
@@ -217,6 +221,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
         total_scaling <- total_scaling * trans$scaling
 
         lwi <- quantities_i$lwi
+        lwfi <- quantities_i$lwfi
         ki <- quantities_i$ki
         kfi <- quantities_i$kfi
         log_liki <- quantities_i$log_liki
@@ -243,6 +248,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
           total_mapping <- trans$mapping %*% total_mapping
 
           lwi <- quantities_i$lwi
+          lwfi <- quantities_i$lwfi
           ki <- quantities_i$ki
           kfi <- quantities_i$kfi
           log_liki <- quantities_i$log_liki
@@ -268,7 +274,16 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
       )
       log_liki <- split_obj$log_liki
       lwi <- split_obj$lwi
+      lwfi <- split_obj$lwfi
+      r_effi <- split_obj$r_effi
     }
+    else {
+      dim(log_liki) <- c(S_per_chain, N_chains, 1)
+      r_effi <- loo::relative_eff(exp(log_liki), cores = cores)
+      dim(log_liki) <- NULL
+    }
+
+
 
     # pointwise estimates
     elpd_loo_i <- matrixStats::logSumExp(log_liki + lwi)
@@ -287,7 +302,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
 
     # diagnostics
     loo$diagnostics$pareto_k[i] <- ki
-    loo$diagnostics$n_eff[i] <- 1.0 / sum(exp(2 * lwi)) * r_effi
+    loo$diagnostics$n_eff[i] <- min(1.0 / sum(exp(2 * lwi)), 1.0 / sum(exp(2 * lwfi))) * r_effi
     kfs[i] <- kfi
 
     # update psis object
@@ -374,11 +389,13 @@ update_quantities_i <- function(x, upars, i, orig_log_prob,
   ki_new <- is_obj_new$diagnostics$pareto_k
 
   is_obj_f_new <- suppressWarnings(importance_sampling.default(log_prob_new - orig_log_prob, method = is_method, r_eff = r_effi, cores = cores))
+  lwfi_new <- as.vector(weights(is_obj_f_new))
   kfi_new <- is_obj_f_new$diagnostics$pareto_k
 
   # gather results
   list(
     lwi = lwi_new,
+    lwfi = lwfi_new,
     ki = ki_new,
     kfi = kfi_new,
     log_liki = log_liki_new
