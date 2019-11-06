@@ -139,7 +139,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
   # number of parameters in the **parameters** block only
   npars <- dim(upars)[2]
   # if more parameters than samples, do not do Cholesky transformation
-  cov <- cov && S >= npars
+  cov <- cov && S >= 10 * npars
   # compute log-probabilities of the original parameter values
   orig_log_prob <- log_prob_upars(x, upars = upars, ...)
 
@@ -162,7 +162,7 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
 
     is_obj <- suppressWarnings(importance_sampling.default(-log_liki, method = is_method, r_eff = r_effi, cores = cores))
     lwi <- as.vector(weights(is_obj))
-    lwfi <- -matrixStats::logSumExp(rep(0, S))
+    lwfi <- rep(-matrixStats::logSumExp(rep(0, S)),S)
 
     # initialize objects that keep track of the total transformation
     total_shift <- rep(0, npars)
@@ -487,9 +487,22 @@ shift_and_cov <- function(x, upars, lwi, ...) {
   shift <- mean_weighted - mean_original
   covv <- stats::cov(upars)
   wcovv <- stats::cov.wt(upars, wt = exp(lwi))$cov
-  chol1 <- chol(wcovv)
-  chol2 <- chol(covv)
-  mapping <- t(chol1) %*% solve(t(chol2))
+  chol1 <- tryCatch(
+    {
+      chol(wcovv)
+    },
+    error = function(cond)
+    {
+      return(NULL)
+    }
+  )
+  if (is.null(chol1)) {
+    mapping <- diag(length(mean_original))
+  }
+  else {
+    chol2 <- chol(covv)
+    mapping <- t(chol1) %*% solve(t(chol2))
+  }
   # transform posterior draws
   upars_new <- sweep(upars, 2, mean_original, "-")
   upars_new <- tcrossprod(upars_new, mapping)
