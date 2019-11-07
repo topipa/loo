@@ -13,14 +13,18 @@ split_mmloo(x, upars, cov, total_shift, total_scaling, total_mapping, i,
 \item{upars}{A matrix containing the model parameters in unconstrained space
 where they can have any real value.}
 
-\item{cov}{Logical; Indicate whether to match the covariance matrix of the samples or not.
-If \code{FALSE}, only the mean and marginal variances are matched.}
+\item{cov}{Logical; Indicate whether to match the covariance matrix of the
+samples or not. If \code{FALSE}, only the mean and marginal variances
+are matched.}
 
-\item{total_shift}{A vector representing the total shift made by the moment matching algorithm.}
+\item{total_shift}{A vector representing the total shift made by the moment
+matching algorithm.}
 
-\item{total_scaling}{A vector representing the total scaling of marginal variance made by the moment matching algorithm.}
+\item{total_scaling}{A vector representing the total scaling of marginal
+variance made by the moment matching algorithm.}
 
-\item{total_mapping}{A vector representing the total covariance transformation made by the moment matching algorithm.}
+\item{total_mapping}{A vector representing the total covariance
+transformation made by the moment matching algorithm.}
 
 \item{i}{Observation index.}
 
@@ -67,7 +71,9 @@ Standard Importance Sampling (SIS).
 \item{...}{Further arguments passed to the custom functions documented above.}
 }
 \value{
-A list containing the updated log-importance weights and log-likelihood values.
+A list containing the updated log-importance weights and
+log-likelihood values. Also returns the updated MCMC effective sample size
+and the integrand-specific log-importance weights.
 }
 \description{
 A function that computes the split moment matching importance sampling loo.

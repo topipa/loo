@@ -11,11 +11,15 @@
 #' @param x A fitted model object.
 #' @param upars A matrix containing the model parameters in unconstrained space
 #' where they can have any real value.
-#' @param cov Logical; Indicate whether to match the covariance matrix of the samples or not.
-#'   If \code{FALSE}, only the mean and marginal variances are matched.
-#' @param total_shift A vector representing the total shift made by the moment matching algorithm.
-#' @param total_scaling A vector representing the total scaling of marginal variance made by the moment matching algorithm.
-#' @param total_mapping A vector representing the total covariance transformation made by the moment matching algorithm.
+#' @param cov Logical; Indicate whether to match the covariance matrix of the
+#' samples or not. If \code{FALSE}, only the mean and marginal variances
+#' are matched.
+#' @param total_shift A vector representing the total shift made by the moment
+#' matching algorithm.
+#' @param total_scaling A vector representing the total scaling of marginal
+#' variance made by the moment matching algorithm.
+#' @param total_mapping A vector representing the total covariance
+#' transformation made by the moment matching algorithm.
 #' @param i Observation index.
 #' @param log_prob_upars A function that takes arguments \code{x} and
 #'   \code{upars} and returns a matrix of log-posterior density values of the
@@ -30,7 +34,9 @@
 #' @template is_method
 #' @param ... Further arguments passed to the custom functions documented above.
 #'
-#' @return A list containing the updated log-importance weights and log-likelihood values.
+#' @return A list containing the updated log-importance weights and
+#' log-likelihood values. Also returns the updated MCMC effective sample size
+#' and the integrand-specific log-importance weights.
 #'
 #'
 #' @seealso [loo()], [mmloo()]
@@ -100,10 +106,17 @@ split_mmloo <- function(x, upars, cov, total_shift, total_scaling,
        log(1 + exp(log_prob_half_trans_inv - log(prod(total_scaling)) -
                      log(det(total_mapping)) - log_prob_half_trans)))
 
-  is_obj_half <- suppressWarnings(importance_sampling.default(lwi_half, method = is_method, r_eff = r_effi, cores = cores))
+  is_obj_half <- suppressWarnings(importance_sampling.default(lwi_half,
+                                                              method = is_method,
+                                                              r_eff = r_effi,
+                                                              cores = cores))
   lwi_half <- as.vector(weights(is_obj_half))
 
-  is_obj_f_half <- suppressWarnings(importance_sampling.default(lwi_half + log_liki_half, method = is_method, r_eff = r_effi, cores = cores))
+  is_obj_f_half <- suppressWarnings(importance_sampling.default(lwi_half +
+                                                                  log_liki_half,
+                                                                method = is_method,
+                                                                r_eff = r_effi,
+                                                                cores = cores))
   lwfi_half <- as.vector(weights(is_obj_f_half))
 
   list(

@@ -160,7 +160,10 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
     r_effi <- loo::relative_eff(exp(log_liki), cores = cores)
     dim(log_liki) <- NULL
 
-    is_obj <- suppressWarnings(importance_sampling.default(-log_liki, method = is_method, r_eff = r_effi, cores = cores))
+    is_obj <- suppressWarnings(importance_sampling.default(-log_liki,
+                                                           method = is_method,
+                                                           r_eff = r_effi,
+                                                           cores = cores))
     lwi <- as.vector(weights(is_obj))
     lwfi <- rep(-matrixStats::logSumExp(rep(0, S)),S)
 
@@ -293,16 +296,15 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
     # elpd_loo
     loo$pointwise[i, 1] <- elpd_loo_i
     # mcse_elpd_loo
-    E_epd_i <- exp(elpd_loo_i)
-    var_epd_i <- sum((exp(lwi))^2 * (exp(log_liki) - E_epd_i)^2)
-    z <- rnorm(1000, mean = E_epd_i, sd = sqrt(var_epd_i))
-    loo$pointwise[i, 2] <- sqrt(var(log(z[z > 0])) / r_effi)
+    loo$pointwise[i, 2] <- mcse_elpd(as.matrix(log_liki),as.matrix(lwi),
+                                     exp(elpd_loo_i), r_effi)
     # looic
     loo$pointwise[i, 4] <- -2 * elpd_loo_i
 
     # diagnostics
     loo$diagnostics$pareto_k[i] <- ki
-    loo$diagnostics$n_eff[i] <- min(1.0 / sum(exp(2 * lwi)), 1.0 / sum(exp(2 * lwfi))) * r_effi
+    loo$diagnostics$n_eff[i] <- min(1.0 / sum(exp(2 * lwi)),
+                                    1.0 / sum(exp(2 * lwfi))) * r_effi
     kfs[i] <- kfi
 
     # update psis object
@@ -317,13 +319,9 @@ mmloo.default <- function(x, loo, post_draws, log_lik,
 
   }
   # combined estimates
-  loo$estimates[1, 1] <- sum(loo$pointwise[, 1])
-  loo$estimates[2, 1] <- sum(loo$pointwise[, 3])
-  loo$estimates[3, 1] <- sum(loo$pointwise[, 4])
-  loo$estimates[1, 2] <- sqrt(N * var(loo$pointwise[, 1]))
-  loo$estimates[2, 2] <- sqrt(N * var(loo$pointwise[, 3]))
-  loo$estimates[3, 2] <- sqrt(N * var(loo$pointwise[, 4]))
-  # loo$estimates <- loo:::table_of_estimates(loo$pointwise)
+  cols_to_summarize <- !(colnames(loo$pointwise) %in% "mcse_elpd_loo")
+  loo$estimates <- table_of_estimates(loo$pointwise[, cols_to_summarize,
+                                                    drop = FALSE])
 
   # these will be deprecated at some point
   loo$elpd_loo <- loo$estimates[1, 1]
@@ -384,11 +382,20 @@ update_quantities_i <- function(x, upars, i, orig_log_prob,
   log_liki_new <- log_lik_upars(x, upars = upars, i = i, ...)
   # compute new log importance weights
 
-  is_obj_new <- suppressWarnings(importance_sampling.default(-log_liki_new + log_prob_new - orig_log_prob, method = is_method, r_eff = r_effi, cores = cores))
+  is_obj_new <- suppressWarnings(importance_sampling.default(-log_liki_new +
+                                                               log_prob_new -
+                                                               orig_log_prob,
+                                                             method = is_method,
+                                                             r_eff = r_effi,
+                                                             cores = cores))
   lwi_new <- as.vector(weights(is_obj_new))
   ki_new <- is_obj_new$diagnostics$pareto_k
 
-  is_obj_f_new <- suppressWarnings(importance_sampling.default(log_prob_new - orig_log_prob, method = is_method, r_eff = r_effi, cores = cores))
+  is_obj_f_new <- suppressWarnings(importance_sampling.default(log_prob_new -
+                                                                 orig_log_prob,
+                                                               method = is_method,
+                                                               r_eff = r_effi,
+                                                               cores = cores))
   lwfi_new <- as.vector(weights(is_obj_f_new))
   kfi_new <- is_obj_f_new$diagnostics$pareto_k
 
@@ -521,7 +528,8 @@ shift_and_cov <- function(x, upars, lwi, ...) {
 #' @noRd
 throw_moment_match_max_iters_warning <- function() {
   warning(
-    "The maximum number of moment matching iterations ('max_iters' argument) was reached.\n",
+    "The maximum number of moment matching iterations ('max_iters' argument)
+    was reached.\n",
     "Increasing the value may improve accuracy.",
     call. = FALSE
   )
